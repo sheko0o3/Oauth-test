@@ -15,7 +15,9 @@ urlpatterns = [
     path('users/', views.UserList.as_view()),
     path('users/<pk>/', views.UserDetails.as_view()),
     path('groups/', views.GroupList.as_view()),
-    path("creatuser/", views.CreateUser.as_view())
+    path("creatuser/", views.CreateUser.as_view()),
+    path("gettoken/", view=views.Token.as_view()),
+    path("", include("rest_framework.urls"))
     # ...
 ]
 
