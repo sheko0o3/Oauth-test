@@ -45,18 +45,21 @@ class CreateUser(APIView):
     def get_token(self, request):
         name = request.data.get("username", None)
         password = request.data.get("password", None)
+        scope = request.data.get("scope", None)
+
         body: dict = {
             "client_id":"zWimZUaxgkRNpYNSP4NBIt6LJd6sO9UXeAuoahnU",
             "client_secret":"tUwEaNKF8tWeTTPdRydLbSMKmQ2BeYezyYWmzmXr4lP8JcwFnF9JA29L1MH0t3cFSnz7Hk2N2ELMncUiaLHY8fe4fcJDgUoQIcdU9DpvLOW70szK4HYp6MZ8FSf9H1MI",
             "username": name,
             "password": password,
-            "grant_type":"password"
+            "grant_type":"password",
+            "scope": scope
         }
 
         response = requests.post(url="http://127.0.0.1:8000/api/o/token/", data=body)
         data:dict = response.json()
         access_token = data.get("access_token", None)
-        return access_token
+        return data
 
     def post(self, request):
         serializer_class = UserSerializer(data=request.data)
@@ -81,8 +84,10 @@ class Token(APIView):
         
         serializer = UserSerializer(instance=user)
         
-        token = AccessToken.objects.get(user=user.id)
-        if token:
+        try:
+            token = AccessToken.objects.get(user=user.id)
             return Response(data={"name":serializer.data.get("username", None),
                             "token":token.token}, status=status.HTTP_200_OK)
-        return Response(data={"msg": "no token related to this user"}, status=status.HTTP_404_NOT_FOUND)
+        
+        except ObjectDoesNotExist:
+            return Response(data={"msg": "no token related to this user"}, status=status.HTTP_404_NOT_FOUND)
