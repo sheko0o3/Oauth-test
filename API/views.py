@@ -1,5 +1,7 @@
 from rest_framework import generics, permissions
-from oauth2_provider.contrib.rest_framework import TokenHasReadWriteScope, TokenHasScope, OAuth2Authentication
+from oauth2_provider.contrib.rest_framework import (TokenHasReadWriteScope, 
+                                                    TokenHasScope, 
+                                                    OAuth2Authentication)
 
 
 from django.contrib.auth.models import User, Group
@@ -17,6 +19,8 @@ from oauth2_provider.models import AccessToken, Application
 from django.core.exceptions import ObjectDoesNotExist
 
 import requests
+from .models import Book
+from .serializers import BookSerializer
 
 # Create the API views
 class UserList(generics.ListCreateAPIView):
@@ -91,3 +95,41 @@ class Token(APIView):
         
         except ObjectDoesNotExist:
             return Response(data={"msg": "no token related to this user"}, status=status.HTTP_404_NOT_FOUND)
+
+
+class GetBooks(APIView):
+    authentication_classes = (OAuth2Authentication,)
+    permission_classes = [permissions.IsAuthenticated, TokenHasScope]
+    required_scopes = ["read"]
+
+    def get_object(self, pk):
+        try:
+            book = Book.objects.get(pk=pk)
+            return book
+        except ObjectDoesNotExist:
+            return Response(data={"message" : "error Not Found!"}, status=status.HTTP_404_NOT_FOUND)
+    
+    def get(self, request):
+        queryset = Book.objects.all()
+        serializer = BookSerializer(instance=queryset, many=True)
+        return Response(data=serializer.data, status=status.HTTP_200_OK)
+    
+    def post(self, request):
+        data = request.data
+        serializer = BookSerializer(data=data)
+        if serializer.is_valid():
+            serializer.save(author=request.user)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def put(self, request):
+        data = request.data
+        book = self.get_object(pk=data["book_id"])
+        serializer = BookSerializer(data=data, instance=book)
+        if serializer.is_valid():
+            serializer.save(author=request.user)
+            return Response(data=serializer.data, status=status.HTTP_201_CREATED)
+        return Response(data=serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    
+

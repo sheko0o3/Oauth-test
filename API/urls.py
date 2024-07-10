@@ -17,7 +17,9 @@ urlpatterns = [
     path('groups/', views.GroupList.as_view()),
     path("creatuser/", views.CreateUser.as_view()),
     path("gettoken/", view=views.Token.as_view()),
-    path("", include("rest_framework.urls"))
+    path("", include("rest_framework.urls")),
+
+    path("books/", view=views.GetBooks.as_view())
     # ...
 ]
 
