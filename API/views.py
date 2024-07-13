@@ -23,6 +23,8 @@ import requests
 from .models import Book
 from .serializers import BookSerializer
 
+import os
+
 # Create the API views
 class UserList(generics.ListCreateAPIView):
     authentication_classes = (OAuth2Authentication,)
@@ -53,8 +55,8 @@ class CreateUser(APIView):
 
 
         body: dict = {
-            "client_id":"zWimZUaxgkRNpYNSP4NBIt6LJd6sO9UXeAuoahnU",
-            "client_secret":"tUwEaNKF8tWeTTPdRydLbSMKmQ2BeYezyYWmzmXr4lP8JcwFnF9JA29L1MH0t3cFSnz7Hk2N2ELMncUiaLHY8fe4fcJDgUoQIcdU9DpvLOW70szK4HYp6MZ8FSf9H1MI",
+            "client_id":os.getenv("CLIENT_ID"),
+            "client_secret":os.getenv("CLIENT_SECRET"),
             "username": name,
             "password": password,
             "grant_type":"password"
